@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Shortener</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="theme-toggle">
+    <label class="switch">
+      <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+      <span class="slider"></span>
+    </label>
+    <span class="mode-label">🌙 Dark Mode</span>
+  </div>
+
+  <div class="wrapper">
+    <div class="container">
+      <h1>🔗 Shrink My Link</h1>
+      <form action="/short" method="POST">
+        <label for="longURL">Shorten your URL</label><br>
+        <input type="text" id="longURL" name="longURL" placeholder="Enter your URL :" required />
+        <button class="submit" type="submit">Shorten URL</button>
+      </form>
+
+      <% if(shortURL) { %>
+      <div class="result-box">
+        <p>✅ Shortened URL:</p>
+        <input type="text" id="shortURL" value="<%= shortURL %>" readonly />
+        <button class="copy" onclick="copyToClipboard()">Copy Link</button>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    function copyToClipboard() {
+      const url = document.getElementById("shortURL");
+      url.select();
+      document.execCommand("copy");
+      alert("Copied: " + url.value);
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html>
