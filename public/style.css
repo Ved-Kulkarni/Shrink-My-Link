@@ -119,6 +119,10 @@ body.dark .copy {
   gap: 10px;
 }
 
+p.dark {
+  color: #000
+}
+
 .switch {
   position: relative;
   display: inline-block;
