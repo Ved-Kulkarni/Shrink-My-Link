@@ -1,31 +1,46 @@
-import { URL } from "../models/URL.js"
-import shortid from "shortid"
+import { URL } from "../models/URL.js";
+import shortid from "shortid";
 
-export const shortURL = async (req,res) => {
-  const longURL = req.body.longURL
-  const shortCode = shortid.generate()
+export const shortURL = async (req, res) => {
+  try {
+    const longURL = req.body.longURL.trim();
+    if (!longURL) return res.status(400).send("No URL provided");
 
-  const shortURL = `${req.protocol}://${req.get('host')}/${shortCode}`
+    // Check if already shortened
+    const existing = await URL.findOne({ longURL });
+    if (existing) {
+      const existingShort = `${req.protocol}://${req.get("host")}/${existing.shortCode}`;
+      return res.render("index", { shortURL: existingShort });
+    }
 
-  // save to database
-  const newURL = new URL({shortCode, longURL})
-  await newURL.save()
+    // Generate short code and save
+    const shortCode = shortid.generate();
+    const newURL = new URL({ shortCode, longURL });
+    await newURL.save();
 
-  console.log("Short URL saved as : ", newURL)
+    const shortURL = `${req.protocol}://${req.get("host")}/${shortCode}`;
+    console.log("New Short URL:", shortURL);
 
-  res.render("index.ejs", {shortURL})
-}
+    res.render("index", { shortURL });
+  } catch (err) {
+    console.error("Error shortening URL:", err);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 export const getOriginalURL = async (req, res) => {
-  const shortCode = req.params.shortCode
+  try {
+    const shortCode = req.params.shortCode;
+    const found = await URL.findOne({ shortCode });
 
-  // find from database
-  const originalURL= await URL.findOne({shortCode})
+    if (!found) {
+      return res.status(404).send("Invalid or expired short URL");
+    }
 
-  if(originalURL) {
-    res.redirect(originalURL.longURL)
+    console.log(`🔁 Redirecting ${shortCode} → ${found.longURL}`);
+    res.redirect(found.longURL);
+  } catch (err) {
+    console.error("❌ Redirect error:", err);
+    res.status(500).send("Internal Server Error");
   }
-  else {
-    res.json({message: "Invalid"})
-  }
-}
+};
