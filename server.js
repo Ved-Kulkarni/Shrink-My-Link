@@ -13,31 +13,34 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  dbName: "URL_SHORTENER"
-}).then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("Mongo error:", err));
+  dbName: "URL_SHORTENER",
+})
+.then(() => console.log("MongoDB connected"))
+.catch((err) => console.error("MongoDB connection error:", err));
 
+// EJS setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// Routes
 app.get("/", (req, res) => {
   res.render("index", { shortURL: null });
 });
 
 app.post("/short", shortURL);
-app.get("/:shortId", getOriginalURL);
 
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
-});
+app.get("/:shortCode", getOriginalURL);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.get("/health", (req, res) => res.status(200).send("OK"));
+
+// Start server
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
